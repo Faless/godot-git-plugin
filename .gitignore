@@ -29,4 +29,6 @@ win64/
 *.os
 *.ilk
 *.pdb
+*.pyc
+*.swp
 !thirdparty/openssl/*
