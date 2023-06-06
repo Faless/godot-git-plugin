@@ -106,6 +106,41 @@ def ssl_action(target, source, env):
     return None
 
 
+def build_openssl(env):
+    # Since the OpenSSL build system does not support macOS universal binaries, we first need to build the two libraries
+    # separately, then we join them together using lipo.
+    if env["platform"] == "macos" and env["arch"] == "universal":
+        build_envs = {
+            "x86_64": env.Clone(),
+            "arm64": env.Clone(),
+        }
+        for arch in build_envs:
+            benv = build_envs[arch]
+            benv["arch"] = arch
+            generate(benv)
+            ssl = benv.OpenSSLBuilder()
+            benv.NoCache(ssl)  # Needs refactoring to properly cache generated headers.
+
+        # x86_64 and arm64 includes are equivalent.
+        env["SSL_INCLUDE"] = build_envs["arm64"]["SSL_INCLUDE"]
+
+        # Join libraries using lipo.
+        ssl_libs = list(map(lambda arch: build_envs[arch]["SSL_LIBRARY"], build_envs))
+        ssl_crypto_libs = list(map(lambda arch: build_envs[arch]["SSL_CRYPTO_LIBRARY"], build_envs))
+        ssl = [
+            env.Command([env["SSL_LIBRARY"]], ssl_libs, "lipo $SOURCES -output $TARGETS -create"),
+            env.Command([env["SSL_CRYPTO_LIBRARY"]], ssl_libs, "lipo $SOURCES -output $TARGETS -create"),
+        ]
+    else:
+        ssl = env.OpenSSLBuilder()
+        env.NoCache(ssl)  # Needs refactoring to properly cache generated headers.
+
+    env.Prepend(CPPPATH=[env["SSL_INCLUDE"]])
+    env.Prepend(LIBPATH=[env["SSL_BUILD"]])
+    env.Append(LIBS=env["SSL_LIBS"])
+    return ssl
+
+
 def options(opts):
     opts.Add(PathVariable("openssl_source", "Path to the openssl sources.", "thirdparty/openssl"))
     opts.Add("openssl_build", "Destination path of the openssl build.", "bin/thirdparty/openssl")
@@ -127,7 +162,5 @@ def generate(env):
     env["SSL_LIBRARY"] = env.File(env["SSL_BUILD"] + "/libssl.a")
     env["SSL_CRYPTO_LIBRARY"] = env.File(env["SSL_BUILD"] + "/libcrypto.a")
     env["SSL_LIBS"] = [env["SSL_LIBRARY"], env["SSL_CRYPTO_LIBRARY"]]
-    env.Append(BUILDERS={"BuildOpenSSL": env.Builder(action=ssl_action, emitter=ssl_emitter)})
-    env.Prepend(CPPPATH=[env["SSL_INCLUDE"]])
-    env.Prepend(LIBPATH=[env["SSL_BUILD"]])
-    env.Append(LIBS=env["SSL_LIBS"])
+    env.Append(BUILDERS={"OpenSSLBuilder": env.Builder(action=ssl_action, emitter=ssl_emitter)})
+    env.AddMethod(build_openssl, "OpenSSL")

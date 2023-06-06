@@ -86,6 +86,7 @@ if env_git["platform"] == "windows":
     )
 
 if env_git["platform"] in ["linux", "macos"]:
+    env_git.Prepend(CPPPATH=[env["SSL_INCLUDE"]])
     env_git.Append(CCFLAGS="-fPIC")
     libgit2_sources += Glob("libgit2/src/unix/" + "*.c")
     libgit2_sources += [
