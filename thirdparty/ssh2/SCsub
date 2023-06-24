@@ -50,14 +50,15 @@ if env_ssh2["platform"] == "windows":
             "libssh2/win32/"
         ]
     )
-    libssh2_sources += ["libssh2/src/agent_win.c", "libssh2/src/wincng.c"]
+    libssh2_sources += [
+        "libssh2/src/openssl.c",
+        "libssh2/src/agent_win.c",
+    ]
     env_ssh2.Append(
         CPPDEFINES=[
-            "LIBSSH2_WINCNG",
-            "HAVE_WINCNG"
+            ("LIBSSH2_OPENSSL", 1),
         ]
     )
-    env_ssh2.Append(LIBS=["crypt32", "user32"])
 
 if env_ssh2["platform"] in ["linux", "macos"]:
     env_ssh2.Append(CCFLAGS="-fPIC")
@@ -105,6 +106,6 @@ if env_ssh2["platform"] in ["linux", "macos"]:
             ("STDC_HEADERS", 1)
         ]
     )
-    env_ssh2.Depends(libssh2_sources, ssl)
 
+env_ssh2.Depends(libssh2_sources, ssl)
 env_ssh2.StaticLibrary(target="../bin/" + "ssh2", source=libssh2_sources)
