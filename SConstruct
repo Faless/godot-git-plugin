@@ -43,8 +43,6 @@ git2 = env.BuildGIT2(ssl)
 Export("ssl")
 Export("env")
 
-#SConscript("thirdparty/SCsub")
-
 SConscript("godot-git-plugin/SCsub")
 
 # Generates help for the -h scons option.
