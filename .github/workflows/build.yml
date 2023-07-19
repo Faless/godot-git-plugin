@@ -7,9 +7,10 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: build-linux-editor-x64
         run: |
-          git submodule update --init --recursive
           pip3 install --user scons
           scons platform=linux target=editor generate_bindings=yes -j $(nproc)
           ldd demo/addons/godot-git-plugin/linux/*.so
@@ -24,6 +25,8 @@ jobs:
     runs-on: windows-2019
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - uses: actions/setup-python@v2
         with:
           python-version: "3.x"
@@ -32,7 +35,6 @@ jobs:
       - uses: ilammy/setup-nasm@v1
       - name: build-windows-editor-x64
         run: |
-          git submodule update --init --recursive
           pip3 install --user scons
           scons platform=windows target=editor generate_bindings=yes -j $env:NUMBER_OF_PROCESSORS
           dumpbin /dependents .\demo\addons\godot-git-plugin\win64\*.dll
@@ -47,9 +49,10 @@ jobs:
     runs-on: macos-11
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: build-macos-editor-universal
         run: |
-          git submodule update --init --recursive
           brew install scons
           scons platform=macos target=editor generate_bindings=yes macos_arch=universal use_llvm=yes macos_deployment_target=10.13 -j $(sysctl -n hw.logicalcpu)
           otool -L demo/addons/godot-git-plugin/macos/*.dylib
