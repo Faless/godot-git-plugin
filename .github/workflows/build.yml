@@ -84,12 +84,8 @@ jobs:
             out/
 
   macos-universal:
-    runs-on: macos-15
+    runs-on: macos-latest
     steps:
-      - name: Setup Xcode 16.2 (16.3+ incompatible with libgit2's zlib)
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '16.2'
       - uses: actions/checkout@v6
         with:
           submodules: recursive
@@ -102,7 +98,7 @@ jobs:
       - name: Build for macOS editor universal
         run: |
           pip install scons
-          scons platform=macos arch=universal macos_deployment_target=10.15
+          scons platform=macos arch=universal macos_deployment_target=11.0
           otool -L addons/godot-git-plugin/macos/*.dylib
       - name: Save Godot build cache
         uses: ./godot-cpp/.github/actions/godot-cache-save
