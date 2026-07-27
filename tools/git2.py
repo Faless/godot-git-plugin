@@ -9,14 +9,14 @@ def build_library(env, deps):
         "OPENSSL_SSL_LIBRARY": env["SSL_LIBRARY"],
         "OPENSSL_CRYPTO_LIBRARY": env["SSL_CRYPTO_LIBRARY"],
         "OPENSSL_ROOT_DIR": env["SSL_INSTALL"],
-        "BUILD_TESTS": 0,
-        "BUILD_CLI": 0,
-        "BUILD_EXAMPLES": 0,
-        "BUILD_FUZZERS": 0,
-        "USE_SSH": 1,
-        "USE_HTTPS": 1,
-        "USE_SHA1": 1,
-        "USE_BUNDLED_ZLIB": 1,
+        "BUILD_TESTS": "OFF",
+        "BUILD_CLI": "OFF",
+        "BUILD_EXAMPLES": "OFF",
+        "BUILD_FUZZERS": "OFF",
+        "USE_SSH": "ON",
+        "USE_HTTPS": "ON",
+        "USE_SHA1": "ON",
+        "USE_BUNDLED_ZLIB": "ON",
         "USE_HTTP_PARSER": "builtin",
         "REGEX_BACKEND": "builtin",
         "USE_HTTPS": "OpenSSL",
@@ -57,6 +57,8 @@ def build_library(env, deps):
     env.Prepend(LIBS=git2[1:])
     if env["platform"] == "windows":
         env.PrependUnique(LIBS=["secur32"])
+    elif env["platform"] == "macos":
+        env.Append(LIBS=["iconv"])
 
     return git2
 
