@@ -23,7 +23,7 @@ if ARGUMENTS.get("custom_api_file", "") != "":
 
 ARGUMENTS["target"] = "editor"
 env = SConscript("godot-cpp/SConstruct").Clone()
-env.PrependENVPath("PATH", os.getenv("PATH"))  # Prepend PATH, done upstream in recent godot-cpp verions.
+env.__class__.msvc = env.get("is_msvc", False)
 
 # Force linking with LTO on windows MSVC, silence the linker complaining that libgit uses LTO but we are not linking with it.
 if env["platform"] == "windows" and env.get("is_msvc", False):
