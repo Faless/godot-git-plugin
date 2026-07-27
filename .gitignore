@@ -23,7 +23,7 @@ build/
 bin/
 macos/
 linux/
-win64/
+windows/
 *.lib
 *.a
 *.obj

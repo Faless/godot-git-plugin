@@ -5,30 +5,38 @@ on: [push, pull_request]
 env:
   # Only used for the cache key. Increment version to force clean build.
   GODOT_BASE_BRANCH: master
+  SCONSFLAGS: target=editor build_profile=build_profile.json api_version=4.3
   SCONS_CACHE: ${{ github.workspace }}/.scons-cache/
 
 jobs:
   linux-x64:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
-      - name: Setup Godot build cache
-        uses: ./godot-cpp/.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./godot-cpp/.github/actions/godot-cache-restore
         with:
           cache-name: linux-x86_64
+          scons-cache: ${{ env.SCONS_CACHE }}
         continue-on-error: true
       - name: Build for Linux editor x86_64
         run: |
           pip3 install scons
-          scons platform=linux arch=x86_64 target=editor generate_bindings=yes
+          scons platform=linux arch=x86_64
           ldd addons/godot-git-plugin/linux/*.so
+      - name: Save Godot build cache
+        uses: ./godot-cpp/.github/actions/godot-cache-save
+        with:
+          cache-name: linux-x86_64
+          scons-cache: ${{ env.SCONS_CACHE }}
+        continue-on-error: true
       - name: Prepare artifact
         run: |
           mkdir out
           mv addons out/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: libgit_plugin.linux.x86_64.editor.so-${{ github.sha }}
           if-no-files-found: error
@@ -38,21 +46,29 @@ jobs:
   windows-x64:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
-      - name: Setup Godot build cache
-        uses: ./godot-cpp/.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./godot-cpp/.github/actions/godot-cache-restore
         with:
           cache-name: windows-x86_64
+          scons-cache: ${{ env.SCONS_CACHE }}
+        continue-on-error: true
       - uses: ilammy/msvc-dev-cmd@v1  # For dumpbin.
       - uses: ilammy/setup-nasm@v1
       - name: Build for Windows editor x86_64
         shell: powershell
         run: |
           pip3 install scons
-          scons platform=windows arch=x86_64 target=editor generate_bindings=yes
+          scons platform=windows arch=x86_64
           dumpbin /dependents .\addons\godot-git-plugin\windows\*.dll
+      - name: Save Godot build cache
+        uses: ./godot-cpp/.github/actions/godot-cache-save
+        with:
+          cache-name: windows-x86_64
+          scons-cache: ${{ env.SCONS_CACHE }}
+        continue-on-error: true
       - name: Prepare artifact
         shell: bash
         run: |
@@ -60,7 +76,7 @@ jobs:
           rm -f addons/godot-git-plugin/windows/*.{exp,lib}
           mkdir out
           mv addons out/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: libgit_plugin.windows.x86_64.editor.dll-${{ github.sha }}
           if-no-files-found: error
@@ -68,29 +84,33 @@ jobs:
             out/
 
   macos-universal:
-    runs-on: macos-15
+    runs-on: macos-latest
     steps:
-      - name: Setup Xcode 16.2 (16.3+ incompatible with libgit2's zlib)
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '16.2'
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
-      - name: Setup Godot build cache
-        uses: ./godot-cpp/.github/actions/godot-cache
+      - name: Restore Godot build cache
+        uses: ./godot-cpp/.github/actions/godot-cache-restore
         with:
           cache-name: macos-universal
+          scons-cache: ${{ env.SCONS_CACHE }}
+        continue-on-error: true
       - name: Build for macOS editor universal
         run: |
           pip install scons
-          scons platform=macos arch=universal target=editor generate_bindings=yes macos_deployment_target=10.13
+          scons platform=macos arch=universal macos_deployment_target=10.13
           otool -L addons/godot-git-plugin/macos/*.dylib
+      - name: Save Godot build cache
+        uses: ./godot-cpp/.github/actions/godot-cache-save
+        with:
+          cache-name: macos-universal
+          scons-cache: ${{ env.SCONS_CACHE }}
+        continue-on-error: true
       - name: Prepare artifact
         run: |
           mkdir out
           mv addons out/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: libgit_plugin.macos.universal.editor.dylib-${{ github.sha }}
           if-no-files-found: error

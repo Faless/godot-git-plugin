@@ -9,26 +9,25 @@ def build_library(env, deps):
         "OPENSSL_SSL_LIBRARY": env["SSL_LIBRARY"],
         "OPENSSL_CRYPTO_LIBRARY": env["SSL_CRYPTO_LIBRARY"],
         "OPENSSL_ROOT_DIR": env["SSL_INSTALL"],
-        "BUILD_TESTS": 0,
-        "BUILD_CLI": 0,
-        "BUILD_EXAMPLES": 0,
-        "BUILD_FUZZERS": 0,
-        "USE_SSH": 1,
-        "USE_HTTPS": 1,
-        "USE_SHA1": 1,
-        "USE_BUNDLED_ZLIB": 1,
+        "BUILD_TESTS": "OFF",
+        "BUILD_CLI": "OFF",
+        "BUILD_EXAMPLES": "OFF",
+        "BUILD_FUZZERS": "OFF",
+        "USE_SSH": "ON",
+        "USE_HTTPS": "OpenSSL",
+        "USE_SHA1": "CollisionDetection",
+        "USE_BUNDLED_ZLIB": "ON",
         "USE_HTTP_PARSER": "builtin",
         "REGEX_BACKEND": "builtin",
-        "USE_HTTPS": "OpenSSL",
-        "USE_SHA1": "OpenSSL",
         "BUILD_SHARED_LIBS": 0,
         "LINK_WITH_STATIC_LIBRARIES": 1,
-        "LIBSSH2_INCLUDE_DIR": env.Dir("#thirdparty/ssh2/libssh2/include").abspath,
-        "LIBSSH2_LIBRARY": deps[-1],
+        "LIBSSH2_INCLUDE_DIRS": env.Dir("#thirdparty/ssh2/libssh2/include").abspath,
+        "LIBSSH2_RESOLVED": deps[-1].abspath,
+        "LIBSSH2_LIBRARIES": "LIBSSH2",
+        "LIBSSH2_FOUND": 1,
         "USE_WINHTTP": 0,
         "STATIC_CRT": env.get("use_static_cpp", True),
         "CMAKE_DISABLE_FIND_PACKAGE_ZLIB": 1,
-        "CMAKE_DISABLE_FIND_PACKAGE_OPENSSL": 1,
     }
 
     if env["platform"] != "windows":
@@ -57,6 +56,8 @@ def build_library(env, deps):
     env.Prepend(LIBS=git2[1:])
     if env["platform"] == "windows":
         env.PrependUnique(LIBS=["secur32"])
+    elif env["platform"] == "macos":
+        env.Append(LIBS=["iconv"])
 
     return git2
 

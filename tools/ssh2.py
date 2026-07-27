@@ -13,7 +13,6 @@ def build_library(env, deps):
         "BUILD_TESTING": 0,
         "BUILD_SHARED_LIBS": 0,
         "CMAKE_DISABLE_FIND_PACKAGE_ZLIB": 1,
-        "CMAKE_DISABLE_FIND_PACKAGE_OPENSSL": 1,
         "CRYPTO_BACKEND": "OpenSSL",
         "CMAKE_POLICY_VERSION_MINIMUM": 3.5,
     }
