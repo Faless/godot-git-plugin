@@ -4,17 +4,17 @@ import os
 def build_library(env, deps):
     config = {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo" if env["debug_symbols"] else "Release",
-        "OPENSSL_USE_STATIC_LIBS": 1,
-        "OPENSSL_INCLUDE_DIR": env["SSL_INCLUDE"],
-        "OPENSSL_SSL_LIBRARY": env["SSL_LIBRARY"],
-        "OPENSSL_CRYPTO_LIBRARY": env["SSL_CRYPTO_LIBRARY"],
-        "OPENSSL_ROOT_DIR": env["SSL_INSTALL"],
+        "CMAKE_C_STANDARD": "99",
+        "MBEDTLS_LIBRARY": env["MBEDTLS_LIBRARY"],
+        "MBEDCRYPTO_LIBRARY": env["MBEDTLS_CRYPTO_LIBRARY"],
+        "MBEDX509_LIBRARY": env["MBEDTLS_X509_LIBRARY"],
+        "MBEDTLS_INCLUDE_DIR": env["MBEDTLS_INCLUDE"],
         "BUILD_TESTS": "OFF",
         "BUILD_CLI": "OFF",
         "BUILD_EXAMPLES": "OFF",
         "BUILD_FUZZERS": "OFF",
-        "USE_SSH": "ON",
-        "USE_HTTPS": "OpenSSL",
+        "USE_SSH": "libssh2",
+        "USE_HTTPS": "mbedTLS",
         "USE_SHA1": "CollisionDetection",
         "USE_BUNDLED_ZLIB": "ON",
         "USE_HTTP_PARSER": "builtin",
@@ -25,15 +25,10 @@ def build_library(env, deps):
         "LIBSSH2_RESOLVED": deps[-1].abspath,
         "LIBSSH2_LIBRARIES": "LIBSSH2",
         "LIBSSH2_FOUND": 1,
-        "USE_WINHTTP": 0,
+        "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
         "STATIC_CRT": env.get("use_static_cpp", True),
-        "CMAKE_DISABLE_FIND_PACKAGE_ZLIB": 1,
+        "CMAKE_C_FLAGS": env.MbedTLSFlags(),
     }
-
-    if env["platform"] != "windows":
-        config["CMAKE_C_FLAGS"] = "-fPIC"
-    else:
-        config["OPENSSL_ROOT_DIR"] = env["SSL_BUILD"]
 
     is_msvc = env.get("is_msvc", False)
     lib_ext = ".lib" if is_msvc else ".a"

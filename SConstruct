@@ -29,17 +29,17 @@ env.__class__.msvc = env.get("is_msvc", False)
 if env["platform"] == "windows" and env.get("is_msvc", False):
     env.AppendUnique(LINKFLAGS=["/LTCG"])
 
-# OpenSSL Builder
-env.Tool("openssl", toolpath=["tools"])
-
-# SSH2 Builder
 env.Tool("cmake", toolpath=["tools"])
+env.Tool("mbedtls", toolpath=["tools"])
 env.Tool("ssh2", toolpath=["tools"])
 env.Tool("git2", toolpath=["tools"])
 
 opts.Update(env)
 
-ssl = env.OpenSSL()
+env["MBEDTLS_CONFIG"] = env.File("godot-git-plugin/include/std_mbedtls_config.h").abspath
+env["MBEDTLS_THREADING_ALT"] = env.File("godot-git-plugin/include/threading_alt.h").abspath
+
+ssl = env.BuildMbedTLS()
 ssh2 = env.BuildSSH2(ssl)
 ssl += ssh2
 git2 = env.BuildGIT2(ssl)
