@@ -98,7 +98,7 @@ jobs:
       - name: Build for macOS editor universal
         run: |
           pip install scons
-          scons platform=macos arch=universal macos_deployment_target=11.0
+          scons platform=macos arch=universal macos_deployment_target=10.13
           otool -L addons/godot-git-plugin/macos/*.dylib
       - name: Save Godot build cache
         uses: ./godot-cpp/.github/actions/godot-cache-save
