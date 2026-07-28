@@ -6,13 +6,10 @@ env = {}
 Import("env")
 Import("ssl")
 
-env["target_path"] = "../" + env["target_path"]
+target_path = "../" + env["target_path"] + "/lib"
 
-if not os.path.isdir(env["target_path"]):
-    os.mkdir(env["target_path"])
-
-# Check our platform specifics
-env["target_path"] += env["platform"] + "/"
+#if not os.path.isdir(target_path):
+#    os.mkdirs(target_path, exist_ok=True)
 
 if env["platform"] == "macos":
     if env["macos_deployment_target"] != "default":
@@ -31,8 +28,8 @@ env.Append(CPPPATH=["#thirdparty/git2/libgit2/include/"])
 lib_sources = Glob("src/*.cpp")
 env.Depends(lib_sources, ssl)
 library = env.SharedLibrary(
-    target=env["target_path"] +
-    "{}{}{}".format(env["target_name"], env["suffix"], env["SHLIBSUFFIX"]),
+    target=target_path + "/{}{}{}".format(env["target_name"], env["suffix"], env["SHLIBSUFFIX"]),
     source=lib_sources
 )
+library += env.InstallAs(target_path + "/../git_plugin.gdextension", env.File("#misc/git_plugin.gdextension"))
 Default(library)

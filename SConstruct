@@ -10,8 +10,8 @@ opts = Variables([], ARGUMENTS)
 env = Environment(ENV=os.environ)
 
 # Define our options
-opts.Add(PathVariable("target_path",
-         "The path where the lib is installed.", "addons/godot-git-plugin/"))
+opts.Add(PathVariable("target_path", "The path where the lib is installed (will be created if it does not exists).",
+         "addons/godot-git-plugin/", PathVariable.PathAccept))
 opts.Add(PathVariable("target_name", "The library name.",
          "libgit_plugin", PathVariable.PathAccept))
 
