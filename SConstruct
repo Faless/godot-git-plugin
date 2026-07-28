@@ -59,7 +59,8 @@ env.Append(CPPPATH=["#thirdparty/git2/libgit2/include/"])
 lib_sources = Glob("godot-git-plugin/src/*.cpp")
 env.Depends(lib_sources, ssl + ssh2)
 library = env.SharedLibrary(
-    target=env["target_path"] + "/{}/{}{}{}".format(env["platform"], env["target_name"], env["suffix"], env["SHLIBSUFFIX"]),
+    target=env["target_path"] + "/lib/{}{}{}".format(env["target_name"], env["suffix"], env["SHLIBSUFFIX"]),
     source=lib_sources,
 )
+library += env.InstallAs(env["target_path"] + "/git_plugin.gdextension", env.File("#misc/git_plugin.gdextension"))
 Default(library)
