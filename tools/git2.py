@@ -1,7 +1,4 @@
-import os
-
-
-def build_library(env, deps):
+def build_library(env, ssl, ssh2):
     config = {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo" if env["debug_symbols"] else "Release",
         "CMAKE_C_STANDARD": "99",
@@ -22,7 +19,7 @@ def build_library(env, deps):
         "BUILD_SHARED_LIBS": 0,
         "LINK_WITH_STATIC_LIBRARIES": 1,
         "LIBSSH2_INCLUDE_DIRS": env.Dir("#thirdparty/ssh2/libssh2/include").abspath,
-        "LIBSSH2_RESOLVED": deps[-1].abspath,
+        "LIBSSH2_RESOLVED": ssh2[-1].abspath,
         "LIBSSH2_LIBRARIES": "LIBSSH2",
         "LIBSSH2_FOUND": 1,
         "CMAKE_POSITION_INDEPENDENT_CODE": "ON",
@@ -35,22 +32,19 @@ def build_library(env, deps):
     lib_prefix = "" if is_msvc else "lib"
     libs = ["{}git2{}".format(lib_prefix, lib_ext)]
 
-    source = env.Dir("#thirdparty/git2/libgit2").abspath
-    target = env.Dir("#bin/thirdparty/libgit2").abspath
-
     git2 = env.CMakeBuild(
         "#bin/thirdparty/git2/",
         "#thirdparty/git2/libgit2",
         cmake_options=config,
         cmake_outputs=libs,
         cmake_targets=[],
-        dependencies=deps,
+        dependencies=ssl + ssh2,
     )
 
     env.Append(CPPPATH=["#thirdparty/git2/libgit2/include"])
     env.Prepend(LIBS=git2[1:])
     if env["platform"] == "windows":
-        env.PrependUnique(LIBS=["secur32"])
+        env.Append(LIBS=["secur32"])
     elif env["platform"] == "macos":
         env.Append(LIBS=["iconv"])
 

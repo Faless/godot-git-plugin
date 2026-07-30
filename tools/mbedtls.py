@@ -3,11 +3,15 @@ def escape_define(env, config):
 
 
 def get_build_flags(env):
+    flags = ""
     if env["MBEDTLS_CONFIG"]:
         if env.msvc:
-            return "-DMBEDTLS_CONFIG_FILE={}".format(escape_define(env, env["MBEDTLS_CONFIG"]))
-        return "'-DMBEDTLS_CONFIG_FILE={}'".format(escape_define(env, env["MBEDTLS_CONFIG"]))
-    return ""
+            flags += " -DMBEDTLS_CONFIG_FILE={}".format(escape_define(env, env["MBEDTLS_CONFIG"]))
+        else:
+            flags += " '-DMBEDTLS_CONFIG_FILE={}'".format(escape_define(env, env["MBEDTLS_CONFIG"]))
+    if env["MBEDTLS_THREADING_ALT"]:
+        flags += " -I '{}'".format(env.File(env["MBEDTLS_THREADING_ALT"]).dir.abspath)
+    return flags
 
 
 def build_library(env):
@@ -18,8 +22,7 @@ def build_library(env):
         env.Append(CPPDEFINES=[("MBEDTLS_CONFIG_FILE", escape_define(env, env["MBEDTLS_CONFIG"]))])
         deps.append(env["MBEDTLS_CONFIG"])
     if env["MBEDTLS_THREADING_ALT"]:
-        alt = env.File(env["MBEDTLS_THREADING_ALT"])
-        deps += env.InstallAs(env["MBEDTLS_INCLUDE"] + "/threading_alt.h", alt)
+        deps += [env.File(env["MBEDTLS_THREADING_ALT"])]
 
     if env["platform"] == "windows" and not env.msvc:
         c_flags += " -D__USE_MINGW_ANSI_STDIO=0"  # See https://github.com/Mbed-TLS/mbedtls/issues/10161
