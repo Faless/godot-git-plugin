@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from misc.utility.scons_hints import *
+
 import os
 
 EnsureSConsVersion(3, 1, 2)
@@ -44,19 +46,19 @@ opts.Update(env)
 # Generates help for the -h scons option.
 Help(opts.GenerateHelpText(env))
 
-env["MBEDTLS_CONFIG"] = env.File("godot-git-plugin/include/std_mbedtls_config.h").abspath
-env["MBEDTLS_THREADING_ALT"] = env.File("godot-git-plugin/include/threading_alt.h").abspath
+env["MBEDTLS_CONFIG"] = env.File("include/std_mbedtls_config.h").abspath
+env["MBEDTLS_THREADING_ALT"] = env.File("include/threading_alt.h").abspath
 
 ssl = env.BuildMbedTLS()
 ssh2 = env.BuildSSH2(ssl)
 git2 = env.BuildGIT2(ssl, ssh2)
 
 # Build our sources
-env.Append(CPPPATH=["godot-git-plugin/include/", "godot-git-plugin/src/"])
+env.Append(CPPPATH=[".", "include/", "src/"])
 
 env.Append(CPPPATH=["#thirdparty/git2/libgit2/include/"])
 
-lib_sources = Glob("godot-git-plugin/src/*.cpp")
+lib_sources = Glob("src/*.cpp")
 env.Depends(lib_sources, ssl + ssh2)
 library = env.SharedLibrary(
     target=env["target_path"] + "/lib/{}{}{}".format(env["target_name"], env["suffix"], env["SHLIBSUFFIX"]),

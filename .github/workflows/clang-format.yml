@@ -4,12 +4,22 @@ on: [push, pull_request]
 
 jobs:
   clang-format:
+    name: 📊 Static Checks (clang-format, black format, file format)
     runs-on: ubuntu-latest
-
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: DoozyX/clang-format-lint-action@v0.18.2
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
-          source: "godot-git-plugin/src"
-          extensions: "h,cpp"
-          clangFormatVersion: 18
+          fetch-depth: 0 # Treeless clone. Slightly less performant than a shallow clone, but makes finding diffs instantaneous.
+          filter: tree:0 # See: https://github.blog/open-source/git/get-up-to-speed-with-partial-clone-and-shallow-clone/
+
+      # This needs to happen before Python and npm execution; it must happen before any extra files are written.
+      - name: .gitignore checks (gitignore_check.sh)
+        run: |
+          bash ./misc/scripts/gitignore_check.sh
+
+      - name: Style checks via prek
+        uses: j178/prek-action@v2
+        with:
+          extra-args: "-a"

@@ -81,10 +81,10 @@ extern "C" int credentials_cb(git_cred **out, const char *url, const char *usern
 	if (!creds->ssh_public_key_path.is_empty()) {
 		if (allowed_types & GIT_CREDENTIAL_SSH_KEY) {
 			return git_credential_ssh_key_new(out,
-					CString(proper_username).data,
-					CString(creds->ssh_public_key_path).data,
-					CString(creds->ssh_private_key_path).data,
-					CString(creds->ssh_passphrase).data);
+											  CString(proper_username).data,
+											  CString(creds->ssh_public_key_path).data,
+											  CString(creds->ssh_private_key_path).data,
+											  CString(creds->ssh_passphrase).data);
 		}
 	}
 
