@@ -11,7 +11,7 @@ def get_build_flags(env):
             flags += " '-DMBEDTLS_CONFIG_FILE={}'".format(escape_define(env, env["MBEDTLS_CONFIG"]))
     if env["MBEDTLS_THREADING_ALT"]:
         if env.msvc:
-            flags += ' /I\\"{}\\"'.format(env.File(env["MBEDTLS_THREADING_ALT"]).dir.abspath)
+            flags += ' /I"{}"'.format(env.File(env["MBEDTLS_THREADING_ALT"]).dir.abspath)
         else:
             flags += " -I '{}'".format(env.File(env["MBEDTLS_THREADING_ALT"]).dir.abspath)
     return flags
