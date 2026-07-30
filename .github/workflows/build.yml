@@ -11,6 +11,8 @@ env:
 jobs:
   linux-x64:
     runs-on: ubuntu-24.04
+    env:
+      BUILDROOT: x86_64-godot-linux-gnu_sdk-buildroot
     steps:
       - uses: actions/checkout@v6
         with:
@@ -21,6 +23,23 @@ jobs:
           cache-name: linux-x86_64
           scons-cache: ${{ env.SCONS_CACHE }}
         continue-on-error: true
+      - name: Setup Linux buildroot toolchain cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            ${{ env.BUILDROOT }}.tar.bz2
+          key: linux-${{ env.BUILDROOT }}-buildroot
+        continue-on-error: true
+      - name: Setup Linux toolchains
+        run: |
+          if [ ! -f ${{ env.BUILDROOT }}.tar.bz2 ]; then
+            wget https://github.com/godotengine/buildroot/releases/download/godot-2023.08.x-4/${{ env.BUILDROOT }}.tar.bz2
+          fi
+          tar -xjf ${{ env.BUILDROOT }}.tar.bz2
+          ${{ env.BUILDROOT }}/relocate-sdk.sh
+          rm ${{ env.BUILDROOT }}/bin/cmake
+          echo "$GITHUB_WORKSPACE/${{ env.BUILDROOT }}/bin" >> $GITHUB_PATH
+          echo "PKG_CONFIG=$GITHUB_WORKSPACE/${{ env.BUILDROOT }}/share/pkgconfig/" >> $GITHUB_ENV
       - name: Build for Linux editor x86_64
         run: |
           pip3 install scons
